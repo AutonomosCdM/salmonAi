@@ -5,8 +5,7 @@ from interface.cli_chat import chat_interface
 from interface.cli_handler import run_command
 
 # Slack handlers (carga condicional)
-from interface.slack_claude.slack_handler import app as claude_app
-from interface.slack_storm.slack_handler import app as storm_app
+from interface.slack_handler import app as slack_app
 
 # Init agents
 claude = ClaudeEngineer()
@@ -26,8 +25,7 @@ if __name__ == "__main__":
                 break
             print(run_command(AGENTS, user_input))
     elif MODE == "slack":
-        print("Slack apps activadas (Claude & Storm)")
-        claude_app.start(port=int(os.getenv("PORT", 3000)))
-        storm_app.start(port=int(os.getenv("PORT", 3001)))
+        print("Slack app activada")
+        slack_app.run(debug=True, port=int(os.getenv("PORT", 3000)))
     else:
         print("APP_MODE inválido. Usa cli, cli_remote o slack.")
