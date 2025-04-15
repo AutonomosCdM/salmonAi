@@ -1,4 +1,4 @@
-from tools.llm_engine import ask_llm
+from core.llm_engine import ask_llm
 import os
 
 class StormScientist:
@@ -7,4 +7,7 @@ class StormScientist:
 
     def investigate(self, topic: str) -> str:
         prompt = f"Actúa como científico. Investiga causas y efectos del tema: {topic}."
-        return ask_llm(self.provider, prompt)
+        response = ask_llm(self.provider, prompt)
+        # Remove bold formatting (asterisks)
+        response = response.replace("*", "").replace("**", "")
+        return response

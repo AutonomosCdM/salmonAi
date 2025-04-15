@@ -1,17 +1,15 @@
-import os
 from slack_bolt import App
-from dotenv import load_dotenv
-from .command_handler import handle_claude_command # Relative import
+import os
 
-load_dotenv() # Load .env file
+# Importar los handlers de cada agente
+from interface.slack_claude.command_handler import handle_claude_command
+from interface.slack_storm.command_handler import handle_storm_command
 
-# Initialize Bolt App for Claude Engineer
 app = App(
     token=os.getenv("SLACK_CLAUDE_BOT_TOKEN"),
     signing_secret=os.getenv("SLACK_CLAUDE_SIGNING_SECRET")
 )
 
-# Command handler for /claude
 @app.command("/claude")
 def slack_command_claude(ack, respond, command):
     ack()
@@ -19,23 +17,32 @@ def slack_command_claude(ack, respond, command):
     result = handle_claude_command(user_input)
     respond(result)
 
-# Event handler for mentions specific to Claude
+@app.command("/storm")
+def slack_command_storm(ack, respond, command):
+    ack()
+    user_input = command["text"]
+    result = handle_storm_command(user_input)
+    respond(result)
+
+# Event handler for app mentions
 @app.event("app_mention")
-def handle_claude_mention(body, say, context):
+def handle_app_mention_events(body, say):
     event = body["event"]
-    bot_user_id = context.bot_user_id # Get this bot's user ID
     text = event["text"]
-    user_id = event["user"]
+    user_id = event["user"] # ID of the user who mentioned the bot
 
-    # Check if this specific bot was mentioned
-    if f"<@{bot_user_id}>" in text:
+    # Simple routing based on keywords in the mention text
+    # A more robust approach might check the mentioned bot's user ID
+    if "claude" in text.lower():
         # Remove the mention part to get the actual user input
-        user_input = text.split(f"<@{bot_user_id}>", 1)[-1].strip()
-        if user_input: # Respond only if there's text after the mention
-             result = handle_claude_command(user_input)
-             say(text=f"<@{user_id}> {result}", thread_ts=event.get("thread_ts", event.get("ts")))
-        else:
-             # Optional: Respond to mention without text
-             say(text=f"Hola <@{user_id}>! Soy Claude Engineer. ¿En qué puedo ayudarte? Puedes usar /claude [tu solicitud].", thread_ts=event.get("thread_ts", event.get("ts")))
-
-# Note: No need for __main__ block if started from main.py
+        user_input = text.split(">", 1)[-1].strip()
+        result = handle_claude_command(user_input)
+        say(text=f"<@{user_id}> {result}") # Mention the user back
+    elif "storm" in text.lower():
+        # Remove the mention part to get the actual user input
+        user_input = text.split(">", 1)[-1].strip()
+        result = handle_storm_command(user_input)
+        say(text=f"<@{user_id}> {result}") # Mention the user back
+    else:
+        # Default response if no specific bot keyword is found
+        say(text=f"Hola <@{user_id}>! ¿En qué puedo ayudarte? Puedes usar /claude o /storm.")

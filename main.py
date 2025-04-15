@@ -1,9 +1,10 @@
 import os
 from agents.claude_engineer import ClaudeEngineer
 from agents.storm_scientist import StormScientist
-from interface.cli_chat import chat_interface
-from interface.cli_handler import run_command
+from interface.cli_chat.cli_handler import chat_interface
+
 from dotenv import load_dotenv
+from slack_bolt.adapter.socket_mode import SocketModeHandler # Import SocketModeHandler
 
 # Import individual Slack handlers
 from interface.slack_claude.slack_handler import app as claude_app
@@ -29,17 +30,22 @@ if __name__ == "__main__":
             user_input = input("remote> ")
             if user_input.lower() in ["exit", "quit"]:
                 break
-            print(run_command(AGENTS, user_input))
+            print(chat_interface(AGENTS, user_input))
     elif MODE == "slack":
-        port = int(os.getenv("PORT", 3000))
         if AGENT_NAME == "claude":
-            print(f"Iniciando Slack app para Claude Engineer en puerto {port}...")
-            claude_app.start(port=port)
+            app_token = os.getenv("SLACK_CLAUDE_APP_TOKEN")
+            if not app_token:
+                print("Error: SLACK_CLAUDE_APP_TOKEN no está configurado.")
+            else:
+                print("Iniciando Slack app para Claude Engineer via Socket Mode...")
+                SocketModeHandler(claude_app, app_token).start()
         elif AGENT_NAME == "storm":
-            print(f"Iniciando Slack app para Storm Scientist en puerto {port}...")
-            # Note: Running two apps on the same port locally might cause issues.
-            # Railway will handle separate instances.
-            storm_app.start(port=port)
+            app_token = os.getenv("SLACK_STORM_APP_TOKEN")
+            if not app_token:
+                print("Error: SLACK_STORM_APP_TOKEN no está configurado.")
+            else:
+                print("Iniciando Slack app para Storm Scientist via Socket Mode...")
+                SocketModeHandler(storm_app, app_token).start()
         else:
             print(f"AGENT_NAME inválido: {AGENT_NAME}. Usa 'claude' o 'storm'.")
     else:
