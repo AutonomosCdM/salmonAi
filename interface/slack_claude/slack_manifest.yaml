@@ -1,0 +1,43 @@
+display_information:
+  name: Claude Engineer
+  description: Agente IT/DevOps en Autonomos AiLab
+  background_color: "#3b3b3b"
+
+settings:
+  org_deploy_enabled: true
+  socket_mode_enabled: true
+  is_hosted: false
+  token_rotation_enabled: false
+
+features:
+  app_home:
+    home_tab_enabled: true
+    messages_tab_enabled: true
+  bot_user:
+    display_name: claude_engineer
+    always_online: true
+  slash_commands:
+    - command: /claude
+      description: Interactuar con Claude Engineer
+      should_escape: false
+
+oauth_config:
+  scopes:
+    bot:
+      - commands
+      - chat:write
+      - chat:write.public
+      - app_mentions:read
+      - channels:read
+      - groups:read
+      - im:read
+      - mpim:read
+      - users:read
+
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_mention
+      - message.im
+  interactivity:
+    is_enabled: true

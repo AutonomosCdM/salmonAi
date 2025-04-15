@@ -3,14 +3,21 @@ def chat_interface(agents: dict):
     print("Escribe 'exit' para salir")
 
     while True:
-        user_input = input("Humano: ")
+        try:
+            user_input = input("Humano: ")
+        except EOFError:
+            print("Fin de la sesión.")
+            break
+
         if user_input.lower() == "exit":
             print("Adiós!")
             break
 
+        response = ""
+
         if "storm" in user_input.lower():
-            response = agents["storm"].investigate("Cataratas en salmón")
+            response = agents["storm"].investigate(user_input)
         else:
-            response = agents["claude"].generate_roadmap("Bolty Agent")
+            response = agents["claude"].generate_roadmap(user_input)
 
         print(f"Agente: {response}")
